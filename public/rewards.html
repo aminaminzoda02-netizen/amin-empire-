@@ -1,0 +1,9 @@
+<!doctype html><html lang="tg"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AMIN EMPIRE — Rewards</title><style>
+body{margin:0;background:#080808;color:#fff;font-family:Arial}.wrap{max-width:850px;margin:auto;padding:22px}.card{background:#151515;border:1px solid #333;border-radius:17px;padding:18px;margin-bottom:14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.badge{background:#202020;border:1px solid #383838;border-radius:15px;padding:17px;text-align:center}.icon{font-size:45px}.gold{color:#d8b35b}button{background:#d8b35b;border:0;border-radius:9px;padding:11px 15px;font-weight:bold}
+</style></head><body><div class="wrap"><div class="card"><h1>👑 AMIN <span class="gold">EMPIRE</span></h1><h2>🏅 Rewards & Achievements</h2><p id="summary"></p></div><div id="badges" class="grid">Loading...</div><br><button onclick="location.href='dashboard.html'">📊 Dashboard</button></div>
+<script>
+const API=location.origin,T=localStorage.getItem("AE_TOKEN");async function api(p){let r=await fetch(API+p,{headers:{Authorization:"Bearer "+T}}),d=await r.json();if(!r.ok)throw Error(d.error||"Error");return d}
+async function init(){try{let d=await api("/api/achievements");summary.textContent=`🏅 Шумо ${d.length} achievement доред.`;badges.innerHTML=d.length?d.map(x=>`<div class="badge"><div class="icon">${x.icon}</div><h3>${esc(x.title)}</h3><p>${esc(x.description)}</p><b>+${x.xp_reward} XP</b><br><small>${x.earned_at}</small></div>`).join(""):"Ҳоло achievement нест."}catch(e){badges.textContent="❌ "+e.message}}
+function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}init();
+</script></body></html>

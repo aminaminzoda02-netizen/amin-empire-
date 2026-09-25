@@ -1,0 +1,9 @@
+<!doctype html><html lang="tg"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AMIN EMPIRE — Payment</title><style>body{background:#080808;color:#fff;font-family:Arial;padding:30px}.card{max-width:600px;margin:auto;background:#151515;border:1px solid #333;border-radius:18px;padding:24px}button{background:#d8b35b;border:0;padding:12px 18px;border-radius:9px;font-weight:bold}input{width:100%;padding:12px;background:#222;color:#fff;border:1px solid #444;border-radius:8px;box-sizing:border-box}</style>
+<div class="card"><h1>👑 AMIN EMPIRE</h1><h2>💳 Пардохт</h2><p id="course">Loading...</p><button onclick="createOrder()">Эҷоди фармоиш</button><p id="out"></p><hr><p>Ин саҳифа танҳо order месозад. Барои гирифтани пули воқеӣ provider-и пардохти тасдиқшуда ва webhook бояд дар backend пайваст шавад.</p></div>
+<script>
+const API=location.origin,token=localStorage.getItem("AE_TOKEN"),id=new URLSearchParams(location.search).get("courseId");
+async function api(p,o={}){o.headers=Object.assign({"Content-Type":"application/json","Authorization":"Bearer "+token},o.headers||{});let r=await fetch(API+p,o),d=await r.json();if(!r.ok)throw Error(d.error||"Error");return d}
+(async()=>{try{let c=await api("/api/courses/"+id);course.innerHTML=`<b>${c.title}</b><br>${c.price} ${c.currency}`}catch(e){course.textContent=e.message}})();
+async function createOrder(){try{let d=await api("/api/orders",{method:"POST",body:JSON.stringify({courseId:Number(id)})});out.innerHTML=`✅ Order #${d.orderId} сохта шуд.<br><small>${d.message}</small>`}catch(e){out.textContent="❌ "+e.message}}
+</script>

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="tg">
+<head>
+<meta charset="utf-8">
+<link rel="manifest" href="/manifest.webmanifest"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AMIN EMPIRE 👑 — Unified</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#070707;color:#fff;font-family:Arial,sans-serif}
+header{height:68px;background:#101010;border-bottom:1px solid #292929;display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:10}
+.logo{font-weight:900;font-size:22px}.gold{color:#d7b35b}.layout{display:flex;min-height:calc(100vh - 68px)}
+nav{width:230px;background:#101010;border-right:1px solid #292929;padding:18px;position:fixed;top:68px;bottom:0}
+nav button{display:block;width:100%;text-align:left;margin:5px 0;background:#191919;color:#fff;border:1px solid #292929;border-radius:10px;padding:12px;cursor:pointer}
+nav button.active,button.gold{background:#d7b35b;color:#090909;font-weight:900}
+main{margin-left:230px;max-width:1100px;padding:30px;width:100%}
+.card{background:#131313;border:1px solid #303030;border-radius:18px;padding:20px;margin-bottom:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}.stat b{font-size:28px;display:block;margin-top:7px}
+.page{display:none}.page.active{display:block}.course{padding:16px;background:#1b1b1b;border-radius:13px;margin:10px 0}
+button{border:0;border-radius:9px;padding:11px 15px;background:#d7b35b;font-weight:800;cursor:pointer;margin:3px}
+input,textarea{width:100%;padding:12px;background:#202020;color:#fff;border:1px solid #444;border-radius:9px;margin:7px 0}
+.bar{height:10px;background:#292929;border-radius:99px;overflow:hidden}.fill{height:100%;background:#d7b35b;width:0}
+.muted{color:#999}.chat{height:300px;overflow:auto;background:#0b0b0b;padding:12px;border-radius:12px}.msg{padding:10px;border-radius:10px;margin:7px 0}.ai{background:#191919}.me{background:#292929;text-align:right}
+@media(max-width:750px){nav{width:75px;padding:8px}nav button{font-size:0;text-align:center}nav button:first-letter{font-size:20px}main{margin-left:75px;padding:18px}.logo{font-size:18px}}
+</style></head>
+<body>
+<header><div class="logo">👑 AMIN <span class="gold">EMPIRE</span></div><div id="userLabel">Guest</div></header>
+<div class="layout">
+<nav>
+<button class="active" onclick="page('home',this)">🏠 Home</button>
+<button onclick="page('courses',this)">📚 Courses</button>
+<button onclick="page('dashboard',this)">📊 Dashboard</button>
+<button onclick="page('ai',this)">🤖 Amin AI</button>
+<button onclick="page('verify',this)">🏆 Verify</button>
+<button onclick="logout()">🚪 Logout</button>
+</nav>
+<main>
+<section id="home" class="page active">
+<div class="card"><h1>Салом, <span id="homeName">Амин Empire</span> 👑</h1><p class="muted">Сармояи асосӣ — Дониш</p><button onclick="page('courses')">Оғози омӯзиш</button></div>
+<div class="grid"><div class="card stat">📚 Курсҳо<b id="sCourses">0</b></div><div class="card stat">📈 Progress<b id="sProgress">0%</b></div><div class="card stat">⭐ XP<b id="sXP">0</b></div><div class="card stat">🆙 Level<b id="sLevel">1</b></div></div>
+</section>
+
+<section id="courses" class="page"><div class="card"><h2>📚 Courses</h2><div id="courseList">Loading...</div></div></section>
+
+<section id="dashboard" class="page">
+<div class="card"><h2>📊 Student Dashboard</h2><div class="bar"><div id="xpFill" class="fill"></div></div><p id="xpText" class="muted"></p></div>
+<div class="card"><h3>🎓 Курсҳои ман</h3><div id="myCourses"></div></div>
+<div class="card"><h3>🏆 Certificate</h3><div id="certs" class="muted">Сертификатҳо баъд аз 100% completion.</div></div>
+</section>
+
+<section id="ai" class="page"><div class="card"><h2>🤖 Amin AI</h2><p class="muted">English · Chinese · Business · Marketing · Trading · Sales</p><div id="chat" class="chat"><div class="msg ai">Салом! Саволи омӯзишӣ диҳед 👑</div></div><div style="display:flex;gap:8px"><input id="aiMsg" placeholder="Саволи худро нависед..." onkeydown="if(event.key==='Enter')askAI()"><button onclick="askAI()">Ирсол</button></div></div></section>
+
+<section id="verify" class="page"><div class="card"><h2>🔎 Certificate Verification</h2><input id="certId" placeholder="AE-ENG-2026-000001"><button onclick="verifyCert()">Санҷидан</button><div id="verifyResult" class="muted"></div></div></section>
+</main></div>
+<script>
+const API=(localStorage.getItem("AE_API")||"http://localhost:3000").replace(/\/$/,"");
+const token=localStorage.getItem("AE_TOKEN");
+async function api(path,opt={}){opt.headers=Object.assign({"Content-Type":"application/json"},opt.headers||{});if(token)opt.headers.Authorization="Bearer "+token;const r=await fetch(API+path,opt),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||"Server error");return d}
+function page(id,btn){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));if(btn)btn.classList.add("active")}
+async function init(){if(!token){userLabel.textContent="Guest";loadCourses();return}try{const me=await api("/api/me");userLabel.textContent=me.name;homeName.textContent=me.name;await loadCourses();await loadMine();await loadXP()}catch(e){localStorage.removeItem("AE_TOKEN")}}
+async function loadCourses(){try{const cs=await api("/api/courses");sCourses.textContent=cs.length;courseList.innerHTML=cs.map(c=>`<div class="course"><h3>${esc(c.title)}</h3><p class="muted">${esc(c.description||"")}</p><b>${c.price} ${c.currency}</b><br><button onclick="buy(${c.id})">💳 Харидан</button></div>`).join("")||"Курс нест."}catch(e){courseList.textContent="❌ "+e.message}}
+function buy(id){location.href="payment.html?courseId="+id}
+async function loadMine(){try{const cs=await api("/api/my-courses");myCourses.innerHTML=cs.length?cs.map(c=>`<div class="course"><b>${esc(c.title)}</b><br><span class="muted">${c.status}</span><br><button onclick="location.href='lesson.html?courseId=${c.id}'">📖 Давом додан</button></div>`).join(""):"Ҳоло курс надоред.";sCourses.textContent=Math.max(Number(sCourses.textContent),cs.length)}catch(e){}}
+async function loadXP(){try{const x=await api("/api/me/xp");sXP.textContent=x.xp;sLevel.textContent=x.level;xpFill.style.width=x.progressPercent+"%";xpText.textContent=`Level ${x.level} · ${x.xp} XP · то Level ${x.level+1}: ${x.nextLevelXP} XP`}catch(e){}}
+async function askAI(){const text=aiMsg.value.trim();if(!text)return;chat.innerHTML+=`<div class="msg me">${esc(text)}</div>`;aiMsg.value="";chat.innerHTML+=`<div id="wait" class="msg ai">⏳...</div>`;chat.scrollTop=chat.scrollHeight;try{const d=await api("/api/ai/chat",{method:"POST",body:JSON.stringify({message:text})});wait.remove();chat.innerHTML+=`<div class="msg ai">${esc(d.answer).replace(/\n/g,"<br>")}</div>`}catch(e){wait.remove();chat.innerHTML+=`<div class="msg ai">❌ ${esc(e.message)}</div>`}}
+async function verifyCert(){const id=certId.value.trim();if(!id)return;try{const d=await api("/api/certificates/verify/"+encodeURIComponent(id));verifyResult.innerHTML=d.valid?`<br>✅ <b>Ҳақиқӣ</b><br>Донишҷӯ: ${esc(d.userName)}<br>Курс: ${esc(d.courseTitle)}<br>Натиҷа: ${d.completionPercent}%`:"❌ Сертификат тасдиқ нашуд."}catch(e){verifyResult.textContent="❌ "+e.message}}
+function logout(){localStorage.removeItem("AE_TOKEN");location.reload()}
+function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+init();
+</script><script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(()=>{});}</script></body></html>

@@ -1,0 +1,20 @@
+<!doctype html><html lang="tg"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AMIN EMPIRE — Lesson Player</title>
+<style>
+body{margin:0;background:#080808;color:#fff;font-family:Arial}.wrap{max-width:850px;margin:auto;padding:20px}.card{background:#151515;border:1px solid #333;border-radius:17px;padding:20px;margin-bottom:15px}.gold{color:#d8b35b}.lesson{padding:13px;border:1px solid #333;border-radius:10px;margin:7px 0;cursor:pointer}.lesson.done{border-color:#d8b35b}.lesson.active{background:#252016}.bar{height:9px;background:#292929;border-radius:99px;overflow:hidden}.fill{height:100%;width:0;background:#d8b35b}button{padding:11px 16px;border:0;border-radius:9px;background:#d8b35b;font-weight:bold;cursor:pointer}.muted{color:#999}
+</style></head><body><div class="wrap">
+<div class="card"><h1>👑 AMIN <span class="gold">EMPIRE</span></h1><h2 id="title">Loading...</h2><div class="bar"><div id="fill" class="fill"></div></div><p id="pct" class="muted"></p></div>
+<div class="card"><h3>📚 Дарсҳо</h3><div id="lessons"></div></div>
+<div class="card"><h2 id="lessonTitle">Интихоби дарс</h2><div id="content" class="muted">Аз рӯйхат дарсро интихоб кунед.</div><br><button id="complete" style="display:none" onclick="completeLesson()">✅ Дарсро анҷом додам</button> <button id="next" style="display:none" onclick="nextLesson()">➡️ Дарси навбатӣ</button></div>
+<div class="card"><button onclick="location.href='index.html'">🏠 Ба платформа</button></div>
+</div>
+<script>
+const API=location.origin,T=localStorage.getItem("AE_TOKEN"),courseId=new URLSearchParams(location.search).get("courseId");let course,currentIndex=0;
+async function api(p,o={}){o.headers=Object.assign({"Content-Type":"application/json","Authorization":"Bearer "+T},o.headers||{});let r=await fetch(API+p,o),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||"Error");return d}
+async function init(){try{course=await api("/api/courses/"+courseId+"/learning");title.textContent=course.title;render();if(course.lessons.length)selectLesson(0)}catch(e){title.textContent="❌ "+e.message}}
+function render(){fill.style.width=course.progressPercent+"%";pct.textContent=`Progress: ${course.progressPercent}%`;lessons.innerHTML=course.lessons.map((l,i)=>`<div class="lesson ${l.completed?"done":""}" id="l${i}" onclick="selectLesson(${i})">${l.completed?"✅":"📖"} ${i+1}. ${esc(l.title)}</div>`).join("")||"Ҳоло дарс нест."}
+async function selectLesson(i){currentIndex=i;document.querySelectorAll(".lesson").forEach(x=>x.classList.remove("active"));document.getElementById("l"+i)?.classList.add("active");let l=await api("/api/lessons/"+course.lessons[i].id);lessonTitle.textContent=`${i+1}. ${l.title}`;content.innerHTML=esc(l.content||"").replace(/\n/g,"<br>");complete.style.display=l.completed?"none":"inline-block";next.style.display=i<course.lessons.length-1?"inline-block":"none"}
+async function completeLesson(){try{let l=course.lessons[currentIndex];let d=await api("/api/progress",{method:"POST",body:JSON.stringify({courseId:Number(courseId),lessonId:l.id,completed:true})});l.completed=1;course.progressPercent=d.progressPercent;render();complete.style.display="none";if(currentIndex<course.lessons.length-1)next.style.display="inline-block";else alert("🎉 Курс ба 100% расид — агар ҳамаи дарсҳо анҷом шуда бошанд, сертификат сохта мешавад.");}catch(e){alert(e.message)}}
+function nextLesson(){if(currentIndex<course.lessons.length-1)selectLesson(currentIndex+1)}
+function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}init();
+</script></body></html>

@@ -1,0 +1,25 @@
+<!doctype html><html lang="tg"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AMIN EMPIRE — Analytics</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080808;color:#fff;font-family:Arial}.wrap{max-width:1150px;margin:auto;padding:22px}.gold{color:#d8b35b}.card{background:#141414;border:1px solid #303030;border-radius:16px;padding:18px;margin-bottom:14px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.stat{color:#999}.stat b{display:block;color:#fff;font-size:27px;margin-top:7px}.row{padding:12px 0;border-bottom:1px solid #292929}.bar{height:10px;background:#292929;border-radius:99px;overflow:hidden}.fill{height:100%;background:#d8b35b}button{background:#d8b35b;border:0;border-radius:9px;padding:10px 14px;font-weight:bold}.muted{color:#999}
+</style></head><body><div class="wrap">
+<div class="card"><h1>👑 AMIN <span class="gold">EMPIRE</span></h1><h2>📊 Advanced Analytics</h2><p class="muted">Маълумоти ин саҳифа танҳо барои Admin аст.</p></div>
+<div class="grid" id="stats"></div>
+<div class="card"><h2>📚 Course Performance</h2><div id="courses">Loading...</div></div>
+<div class="card"><h2>🏅 Top Learning Activity</h2><div id="students">Loading...</div></div>
+<div class="card"><button onclick="location.href='admin.html'">← Admin Panel</button></div>
+</div>
+<script>
+const API=location.origin,T=localStorage.getItem("AE_ADMIN_TOKEN");
+async function api(p){let r=await fetch(API+p,{headers:{Authorization:"Bearer "+T}}),d=await r.json();if(!r.ok)throw Error(d.error||"Error");return d}
+async function init(){try{let d=await api("/api/admin/analytics");
+stats.innerHTML=[
+["👥 Students",d.students],["📚 Active Enrollments",d.activeEnrollments],["💳 Paid Orders",d.paidOrders],["⏳ Pending Orders",d.pendingOrders],
+["💰 Revenue",d.revenue+" TJS"],["📖 Lessons Done",d.lessonsDone],["🧠 Quiz Passes",d.quizPasses],["🏆 Certificates",d.certificates]
+].map(x=>`<div class="card stat">${x[0]}<b>${x[1]}</b></div>`).join("");
+courses.innerHTML=d.courses.map(c=>`<div class="row"><b>${esc(c.title)}</b><br><span class="muted">Students: ${c.students} · Paid: ${c.paid} · Revenue: ${c.revenue} TJS · Certificates: ${c.certificates}</span></div>`).join("")||"Курс нест.";
+const max=Math.max(1,...d.topStudents.map(x=>x.xp));
+students.innerHTML=d.topStudents.map((x,i)=>`<div class="row"><b>${i+1}. ${esc(x.name)}</b> · ${x.xp} XP · ${x.certificates} certificates<div class="bar"><div class="fill" style="width:${Math.round(x.xp*100/max)}%"></div></div></div>`).join("")||"Донишҷӯ нест.";
+}catch(e){document.body.innerHTML="<div style='padding:30px;color:white'>❌ "+e.message+"</div>"}}
+function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}init();
+</script></body></html>

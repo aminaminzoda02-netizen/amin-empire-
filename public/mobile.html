@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="tg"><head><meta charset="utf-8">
+<link rel="manifest" href="/manifest.webmanifest"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AMIN EMPIRE 👑 — Mobile</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#070707;color:#fff;font-family:Arial,sans-serif}
+.app{max-width:520px;margin:auto;min-height:100vh;background:#101010}.top{padding:18px;border-bottom:1px solid #292929;display:flex;justify-content:space-between}
+.gold{color:#d8b35b}.content{padding:18px 16px 90px}.card{background:#171717;border:1px solid #303030;border-radius:18px;padding:17px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{font-size:13px;color:#aaa}.stat b{display:block;color:#fff;font-size:24px;margin-top:5px}
+button{border:0;border-radius:11px;padding:12px 15px;background:#d8b35b;font-weight:800}.course{padding:14px;border:1px solid #333;border-radius:13px;margin:9px 0}
+.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);background:#111;border-top:1px solid #333;display:grid;grid-template-columns:repeat(4,1fr);padding:8px}.bottom button{background:transparent;color:#fff;font-size:11px;padding:8px}
+.page{display:none}.page.active{display:block}.muted{color:#999}
+</style></head><body><div class="app">
+<div class="top"><b>👑 AMIN <span class="gold">EMPIRE</span></b><span id="user">Guest</span></div>
+<div class="content">
+<section id="home" class="page active"><div class="card"><h2>Сармояи асосӣ — Дониш</h2><p class="muted">Ҳамаи омӯзишҳо дар як ҷо.</p><button onclick="go('courses')">Оғози омӯзиш</button></div>
+<div class="grid"><div class="card stat">📚 Курсҳо<b id="coursesN">0</b></div><div class="card stat">⭐ XP<b id="xp">0</b></div><div class="card stat">🆙 Level<b id="level">1</b></div><div class="card stat">📈 Progress<b id="progress">0%</b></div></div></section>
+<section id="courses" class="page"><div class="card"><h2>📚 Курсҳо</h2><div id="list">Loading...</div></div></section>
+<section id="profile" class="page"><div class="card"><h2>👤 Профил</h2><p id="profileText" class="muted">Login барои дидани профил.</p><button onclick="location.href='index.html'">Student Portal</button></div></section>
+<section id="ai" class="page"><div class="card"><h2>🤖 Amin AI</h2><p class="muted">English · Chinese · Business · Marketing · Trading · Sales</p><input id="q" placeholder="Савол..." style="width:100%;padding:12px;background:#222;color:#fff;border:1px solid #444;border-radius:9px"><br><br><button onclick="ask()">Ирсол</button><p id="answer" class="muted"></p></div></section>
+</div>
+<div class="bottom"><button onclick="go('home')">🏠<br>Home</button><button onclick="go('courses')">📚<br>Courses</button><button onclick="go('ai')">🤖<br>AI</button><button onclick="go('profile')">👤<br>Profile</button><button onclick="location.href='notifications.html'">🔔<br>Alerts</button></div>
+</div>
+<script>
+const API=location.origin,T=localStorage.getItem("AE_TOKEN");
+async function api(p,o={}){o.headers=Object.assign({"Content-Type":"application/json"},o.headers||{});if(T)o.headers.Authorization="Bearer "+T;let r=await fetch(API+p,o),d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.error||"Error");return d}
+function go(id){document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active")}
+async function init(){try{let me=await api("/api/me");user.textContent=me.name;profileText.textContent=`${me.name} · ${me.email}`;let cs=await api("/api/courses");coursesN.textContent=cs.length;list.innerHTML=cs.map(c=>`<div class="course"><b>${esc(c.title)}</b><p class="muted">${esc(c.description||"")}</p><b>${c.price} ${c.currency}</b><br><button onclick="location.href='payment.html?courseId=${c.id}'">Харидан</button></div>`).join("");let x=await api("/api/me/xp");xp.textContent=x.xp;level.textContent=x.level;let mine=await api("/api/my-courses");progress.textContent=mine.length?Math.round(mine.reduce((a,c)=>a+c.progress,0)/mine.length)+"%":"0%"}catch(e){profileText.textContent="Login лозим аст."}}
+async function ask(){try{let d=await api("/api/ai/chat",{method:"POST",body:JSON.stringify({message:q.value})});answer.textContent=d.answer}catch(e){answer.textContent="❌ "+e.message}}
+function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}init();
+</script><script>if("serviceWorker" in navigator){navigator.serviceWorker.register("/sw.js").catch(()=>{});}</script></body></html>

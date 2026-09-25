@@ -1,0 +1,12 @@
+<!doctype html><html lang="tg"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AMIN EMPIRE — Notifications</title><style>
+body{margin:0;background:#080808;color:#fff;font-family:Arial}.wrap{max-width:800px;margin:auto;padding:22px}.card{background:#151515;border:1px solid #333;border-radius:16px;padding:18px;margin-bottom:12px}.note{padding:14px;border-radius:12px;background:#202020;margin:8px 0;border-left:4px solid #777}.unread{border-left-color:#d8b35b}.muted{color:#999}button{background:#d8b35b;border:0;border-radius:9px;padding:10px 14px;font-weight:bold}.gold{color:#d8b35b}
+</style></head><body><div class="wrap"><div class="card"><h1>👑 AMIN <span class="gold">EMPIRE</span></h1><h2>🔔 Notifications</h2><button onclick="readAll()">Ҳамаро хондашуда</button></div><div id="list">Loading...</div></div>
+<script>
+const API=location.origin,T=localStorage.getItem("AE_TOKEN");
+async function api(p,o={}){o.headers=Object.assign({"Content-Type":"application/json","Authorization":"Bearer "+T},o.headers||{});let r=await fetch(API+p,o),d=await r.json();if(!r.ok)throw Error(d.error||"Error");return d}
+async function load(){try{let d=await api("/api/notifications");list.innerHTML=d.length?d.map(n=>`<div class="note ${n.read?"":"unread"}"><b>${esc(n.title)}</b><p>${esc(n.message)}</p><small class="muted">${n.created_at}</small>${n.read?"":`<br><button onclick="read(${n.id})">Хондам</button>`}</div>`).join(""):"🔔 Ҳоло notification нест."}catch(e){list.textContent="❌ "+e.message}}
+async function read(id){await api("/api/notifications/"+id+"/read",{method:"POST"});load()}
+async function readAll(){await api("/api/notifications/read-all",{method:"POST"});load()}
+function esc(x){return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}load();
+</script></body></html>
