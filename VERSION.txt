@@ -1,0 +1,5 @@
+AMIN EMPIRE FINAL 1.0.1
+Consolidated development release.
+Includes student portal, admin, learning, quizzes, rewards, notifications,
+certificates, analytics, generic payment webhook architecture and PWA shell.
+Production payment/hosting/domain credentials are intentionally not embedded.
